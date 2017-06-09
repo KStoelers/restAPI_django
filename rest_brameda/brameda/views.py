@@ -1,75 +1,142 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.views.generic import TemplateView,ListView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.core.urlresolvers import reverse
-from brameda.models import Customer, Product, Order, OrderRow
+from brameda.models import *
+from django.http import Http404
 
-class CustomerList(ListView):
-	model = Customer
-	
-class CustomerCreate(CreateView):
-	model = Customer
-	success_url = reverse('customer_list')
-	fields = ['first_name', 'last_name', 'email', 'address']
+from brameda.serializers import *
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
-class CustomerUpdate(UpdateView):
-	model = Customer
-	success_url = reverse('customer_list')
-	fields = ['first_name', 'last_name', 'email', 'address']
+class CustomerList(APIView):
+    """ List all customers """
+def get(self, request, format=None):
+    customers = Customer.objects.all()
+    serializer = CustomerSerializer(customers, many=True)
+    return Response(serializer.data)
 
-class CustomerDelete(DeleteView):
-	model = Customer
-	success_url = reverse('customer=_list')
-	
-class ProductList(ListView):
-	model = Product
-	
-class ProductCreate(CreateView):
-	model = Product
-	success_url = reverse('product_list')
-	fields = ['name', 'price', 'product_id']
+class CustomerDetail(APIView):
+    """ Create, retrieve, update or delete a customer instance"""
+def post(self, request, format=None):
+    serializer = CustomerSerializer(data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		
+def get_object(self, pk):
+    try:
+        return Customer.objects.get(pk=pk)
+    except Customer.DoesNotExist:
+        raise Http404
 
-class ProductUpdate(UpdateView):
-	model = Product
-	success_url = reverse('product_list')
-	fields = ['name', 'price', 'product_id']
+def get(self, request, pk, format=None):
+    customer = self.get_object(pk)
+    customer = CustomerSerializer(customer)
+    return Response(customer.data)
 
-class ProductDelete(DeleteView):
-	model = Product
-	success_url = reverse('product_list')
-	
-class OrderList(ListView):
-	model = Order
-	
-class OrderCreate(CreateView):
-	model = Order
-	success_url = reverse('order_list')
-	fields = ['order_id', 'order_rows']
+def put(self, request, pk, format=None):
+    customer = self.get_object(pk)
+    serializer = CustomerSerializer(customer, data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class OrderUpdate(UpdateView):
-	model = Order
-	success_url = reverse('order_list')
-	fields = ['order_id', 'order_rows']
+def delete(self, request, pk, format=None):
+    customer = self.get_object(pk)
+    customer.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
-class OrderDelete(DeleteView):
-	model = Order
-	success_url = reverse('order_list')
+class ProductList(APIView):
+    """ List all products """
+def get(self, request, format=None):
+    products = Product.objects.all()
+    serializer = ProductSerializer(products, many=True)
+    return Response(serializer.data)
 
-class OrderRowList(ListView):
-	model = OrderRow
-	
-class OrderRowCreate(CreateView):
-	model = OrderRow
-	success_url = reverse('orderrow_list')
-	fields = ['order_row_id', 'product', 'amount']
+class ProductDetail(APIView):
+    """ retrieve a product instance"""		
+def get_object(self, pk):
+    try:
+        return Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        raise Http404
+			
+class OrderList(APIView):
+    """ List all orders """
+def get(self, request, format=None):
+    orders = Order.objects.all()
+    serializer = OrderSerializer(orders, many=True)
+    return Response(serializer.data)
 
-class OrderRowUpdate(UpdateView):
-	model = OrderRow
-	success_url = reverse('orderrow_list')
-	fields = ['order_row_id', 'product', 'amount']
+class OrderDetail(APIView):
+    """ Create, retrieve, update or delete an order instance"""
+def post(self, request, format=None):
+    serializer = OrderSerializer(data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		
+def get_object(self, pk):
+    try:
+        return Order.objects.get(pk=pk)
+    except Order.DoesNotExist:
+        raise Http404
 
-class OrderRowDelete(DeleteView):
-	model = OrderRow
-	success_url = reverse('orderrow_list')
-	
+def get(self, request, pk, format=None):
+    order = self.get_object(pk)
+    order = OrderSerializer(order)
+    return Response(order.data)
+
+def put(self, request, pk, format=None):
+    order = self.get_object(pk)
+    serializer = OrderSerializer(order, data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+def delete(self, request, pk, format=None):
+    order = self.get_object(pk)
+    order.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+class OrderRowList(APIView):
+    """ List all orderrows """
+def get(self, request, format=None):
+    orderrows = OrderRow.objects.all()
+    serializer = OrderRowSerializer(orderrows, many=True)
+    return Response(serializer.data)
+
+class OrderRowDetail(APIView):
+    """ Create, retrieve, update or delete an orderrow instance"""
+def post(self, request, format=None):
+    serializer = OrderRowSerializer(data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		
+def get_object(self, pk):
+    try:
+        return OrderRow.objects.get(pk=pk)
+    except OrderRow.DoesNotExist:
+        raise Http404
+
+def get(self, request, pk, format=None):
+    orderrow = self.get_object(pk)
+    orderrow = OrderRowSerializer(orderrow)
+    return Response(orderrow.data)
+
+def put(self, request, pk, format=None):
+    orderrow = self.get_object(pk)
+    serializer = OrderRowSerializer(orderrow, data=request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+def delete(self, request, pk, format=None):
+    orderrow = self.get_object(pk)
+    orderrow.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
