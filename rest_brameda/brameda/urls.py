@@ -1,4 +1,5 @@
 from django.conf.urls import *
+from rest_framework.urlpatterns import format_suffix_patterns
 from brameda import views
 
 urlpatterns = [
@@ -11,3 +12,5 @@ urlpatterns = [
     url(r'^orderrows/', views.OrderRowList.as_view(), name='orderrow_list'),
     url(r'^orderrows/(?P<pk>[0-9]+)/$', views.OrderRowDetail.as_view()),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
